@@ -1,6 +1,6 @@
 import UIKit
 
-class AddContactViewController: UIViewController {
+class AddContactViewController: UIViewController, UITextFieldDelegate {
     var onSave: ((String, String, UIImage?) -> Void)? // 데이터 저장 콜백
     
     private let nameTextField: UITextField = {
@@ -38,6 +38,9 @@ class AddContactViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        
+        // phoneTextField delegate 설정
+        phoneTextField.delegate = self
     }
     
     private func setupUI() {
@@ -110,13 +113,35 @@ class AddContactViewController: UIViewController {
         task.resume()
     }
     
+    // 이름과 전화번호를 입력안했을 때 alert호출
     @objc private func saveContact() {
         guard let name = nameTextField.text, !name.isEmpty,
               let phoneNumber = phoneTextField.text, !phoneNumber.isEmpty else {
-            print("이름과 전화번호를 입력해주세요.")
+            // 입력되지 않은 경우 알림창 띄우기
+            showAlert(message: "이름과 전화번호를 입력해주세요.")
             return
         }
-        onSave?(name, phoneNumber, profileImageView.image) // 데이터 전달
-        navigationController?.popViewController(animated: true) // 이전 화면으로 돌아가기
+        
+        // 데이터 저장 콜백 호출
+        onSave?(name, phoneNumber, profileImageView.image)
+        
+        // 이전 화면으로 돌아가기
+        navigationController?.popViewController(animated: true)
+    }
+
+    // 전화번호 필드에서 숫자 이외의 문자가 입력되지 않도록 처리
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        // 전화번호에 숫자만 입력되도록
+        if textField == phoneTextField {
+            let characterSet = CharacterSet.decimalDigits
+            let isValid = string.rangeOfCharacter(from: characterSet.inverted) == nil
+            if !isValid {
+                // 숫자 외의 문자가 입력되었을 때 알림창 띄우기
+                showAlert(message: "전화번호는 숫자만 입력 가능합니다.")
+            }
+            return isValid
+        }
+        return true
     }
 }
+
