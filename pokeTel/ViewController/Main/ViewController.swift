@@ -2,7 +2,7 @@ import UIKit
 
 class MainViewController: UIViewController {
     private let tableView = UITableView()
-    private let viewModel = ContactListViewModel() // ViewModel 인스턴스
+    let viewModel = ContactListViewModel() // ViewModel 인스턴스
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -12,7 +12,7 @@ class MainViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .white
-        title = "Contacts"
+        title = "PokeTel 연락처"
         
         // Add Button
         let addButton = UIBarButtonItem(title: "추가", style: .plain, target: self, action: #selector(addContact))
@@ -31,15 +31,17 @@ class MainViewController: UIViewController {
         
         tableView.delegate = self
         tableView.dataSource = self
-        tableView.register(ContactTableViewCell.self, forCellReuseIdentifier: "ContactCell")
+        tableView.register(TableViewCell.self, forCellReuseIdentifier: "ContactCell")
         tableView.rowHeight = 80
     }
     
     @objc private func addContact() {
-        print("Add Contact Button Tapped")
-        // 연락처 추가 화면으로 이동하거나 ViewModel에서 데이터 추가
-        viewModel.addContact(name: "New Contact", phoneNumber: "000-000-0000", profileImage: UIImage(systemName: "person.fill"))
-        tableView.reloadData()
+        let addContactVC = AddContactViewController()
+        addContactVC.onSave = { [weak self] name, phoneNumber, profileImage in
+            self?.viewModel.addContact(name: name, phoneNumber: phoneNumber, profileImage: profileImage)
+            self?.tableView.reloadData()
+        }
+        navigationController?.pushViewController(addContactVC, animated: true)
     }
 }
 
@@ -49,7 +51,7 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ContactCell", for: indexPath) as? ContactTableViewCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ContactCell", for: indexPath) as? TableViewCell else {
             return UITableViewCell()
         }
         

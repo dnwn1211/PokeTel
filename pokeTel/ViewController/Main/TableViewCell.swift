@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ContactTableViewCell: UITableViewCell {
+class TableViewCell: UITableViewCell {
     private let profileImageView = UIImageView()
     private let nameLabel = UILabel()
     private let phoneLabel = UILabel()
