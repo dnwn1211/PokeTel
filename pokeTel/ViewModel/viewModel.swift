@@ -15,11 +15,16 @@ class ContactListViewModel {
     init(contacts: [Contact] = []) {
         self.contacts = contacts
     }
+    
+    func sortContacts(){
+        contacts.sort { $0.name.lowercased() < $1.name.lowercased()}
+    }
 
-    // 새로운 연락처 추가
+    // 연락처 추가 후 정렬
     func addContact(name: String, phoneNumber: String, profileImage: UIImage?) {
         let newContact = Contact(id: UUID(), name: name, phoneNumber: phoneNumber, profileImage: profileImage)
         contacts.append(newContact)
+        sortContacts()
     }
 }
 

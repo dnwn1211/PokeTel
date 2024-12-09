@@ -10,6 +10,12 @@ class MainViewController: UIViewController {
         setupTableView()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewModel.sortContacts() // 이름순 정렬
+        tableView.reloadData()   // 데이터 리로드
+    }
+    
     private func setupUI() {
         view.backgroundColor = .white
         title = "PokeTel 연락처"
