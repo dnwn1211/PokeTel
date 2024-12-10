@@ -42,7 +42,7 @@ class MainViewController: UIViewController {
     }
     
     @objc private func addContact() {
-        let addContactVC = AddContactViewController()
+        let addContactVC = PhoneBookViewController()
         addContactVC.onSave = { [weak self] name, phoneNumber, profileImage in
             self?.viewModel.addContact(name: name, phoneNumber: phoneNumber, profileImage: profileImage)
             self?.tableView.reloadData()
@@ -65,4 +65,27 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
         cell.configure(name: contact.name, phoneNumber: contact.phoneNumber, profileImage: contact.profileImage)
         return cell
     }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // 선택된 연락처 가져오기
+        let selectedContact = viewModel.contacts[indexPath.row]
+
+        // PhoneBookViewController로 이동
+        let editContactVC = PhoneBookViewController()
+        editContactVC.contactName = selectedContact.name
+        editContactVC.contactPhone = selectedContact.phoneNumber
+        editContactVC.contactImage = selectedContact.profileImage
+
+        // 수정 후 저장하는 콜백 설정
+        editContactVC.onSave = { [weak self] name, phoneNumber, profileImage in
+            guard let self = self else { return }
+            self.viewModel.updateContact(at: indexPath.row, name: name, phoneNumber: phoneNumber, profileImage: profileImage)
+            self.tableView.reloadData()
+        }
+
+        navigationController?.pushViewController(editContactVC, animated: true)
+    }
 }
+
+
+

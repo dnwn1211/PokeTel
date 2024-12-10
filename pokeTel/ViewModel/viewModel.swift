@@ -8,23 +8,19 @@ import Foundation
 import UIKit
 
 class ContactListViewModel {
-    // Output: 연락처 리스트를 View에 전달
-    var contacts: [Contact]
+    var contacts: [(name: String, phoneNumber: String, profileImage: UIImage?)] = []
 
-    // 초기화 시 데이터를 주입받도록 수정
-    init(contacts: [Contact] = []) {
-        self.contacts = contacts
+    func addContact(name: String, phoneNumber: String, profileImage: UIImage?) {
+        contacts.append((name, phoneNumber, profileImage))
     }
     
-    func sortContacts(){
-        contacts.sort { $0.name.lowercased() < $1.name.lowercased()}
+    func updateContact(at index: Int, name: String, phoneNumber: String, profileImage: UIImage?) {
+        guard index < contacts.count else { return }
+        contacts[index] = (name, phoneNumber, profileImage)
     }
-
-    // 연락처 추가 후 정렬
-    func addContact(name: String, phoneNumber: String, profileImage: UIImage?) {
-        let newContact = Contact(id: UUID(), name: name, phoneNumber: phoneNumber, profileImage: profileImage)
-        contacts.append(newContact)
-        sortContacts()
+    
+    func sortContacts() {
+        contacts.sort { $0.name < $1.name }
     }
 }
 

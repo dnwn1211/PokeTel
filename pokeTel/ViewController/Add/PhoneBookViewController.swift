@@ -1,8 +1,12 @@
 import UIKit
 
-class AddContactViewController: UIViewController, UITextFieldDelegate {
+class PhoneBookViewController: UIViewController, UITextFieldDelegate {
+    // 데이터 전달용 프로퍼티
+    var contactName: String?
+    var contactPhone: String?
+    var contactImage: UIImage?
     var onSave: ((String, String, UIImage?) -> Void)? // 데이터 저장 콜백
-    
+
     private let nameTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = "이름"
@@ -41,11 +45,24 @@ class AddContactViewController: UIViewController, UITextFieldDelegate {
         
         // phoneTextField delegate 설정
         phoneTextField.delegate = self
+        
+        // 전달받은 데이터로 화면 초기화
+        if let contactName = contactName {
+            nameTextField.text = contactName
+            title = contactName // 네비게이션 바 제목
+        } else {
+            title = "연락처 추가"
+        }
+        if let contactPhone = contactPhone {
+            phoneTextField.text = contactPhone
+        }
+        if let contactImage = contactImage {
+            profileImageView.image = contactImage
+        }
     }
     
     private func setupUI() {
         view.backgroundColor = .white
-        title = "연락처 추가"
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "저장", style: .done, target: self, action: #selector(saveContact))
         
@@ -86,23 +103,14 @@ class AddContactViewController: UIViewController, UITextFieldDelegate {
             }
             
             do {
-                // JSON 디코딩
-                if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                    // JSON 정보를 콘솔에 출력
-                    print("API Response: \(json)")
-                    
-                    // 필요한 데이터 추출
-                    if let sprites = json["sprites"] as? [String: Any],
-                       let imageUrlString = sprites["front_default"] as? String,
-                       let imageUrl = URL(string: imageUrlString),
-                       let imageData = try? Data(contentsOf: imageUrl),
-                       let image = UIImage(data: imageData) {
-                        // UI 업데이트는 메인 스레드에서 실행
-                        DispatchQueue.main.async {
-                            self.profileImageView.image = image
-                        }
-                    } else {
-                        print("Image URL not found")
+                let decoder = JSONDecoder()
+                let pokemon = try decoder.decode(Pokemon.self, from: data)
+                
+                if let imageUrl = URL(string: pokemon.sprites.frontDefault),
+                   let imageData = try? Data(contentsOf: imageUrl),
+                   let image = UIImage(data: imageData) {
+                    DispatchQueue.main.async {
+                        self.profileImageView.image = image
                     }
                 }
             } catch {
@@ -113,30 +121,22 @@ class AddContactViewController: UIViewController, UITextFieldDelegate {
         task.resume()
     }
     
-    // 이름과 전화번호를 입력안했을 때 alert호출
     @objc private func saveContact() {
         guard let name = nameTextField.text, !name.isEmpty,
               let phoneNumber = phoneTextField.text, !phoneNumber.isEmpty else {
-            // 입력되지 않은 경우 알림창 띄우기
             showAlert(message: "이름과 전화번호를 입력해주세요.")
             return
         }
         
-        // 데이터 저장 콜백 호출
         onSave?(name, phoneNumber, profileImageView.image)
-        
-        // 이전 화면으로 돌아가기
         navigationController?.popViewController(animated: true)
     }
 
-    // 전화번호 필드에서 숫자 이외의 문자가 입력되지 않도록 처리
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        // 전화번호에 숫자만 입력되도록
         if textField == phoneTextField {
             let characterSet = CharacterSet.decimalDigits
             let isValid = string.rangeOfCharacter(from: characterSet.inverted) == nil
             if !isValid {
-                // 숫자 외의 문자가 입력되었을 때 알림창 띄우기
                 showAlert(message: "전화번호는 숫자만 입력 가능합니다.")
             }
             return isValid
@@ -144,4 +144,3 @@ class AddContactViewController: UIViewController, UITextFieldDelegate {
         return true
     }
 }
-
