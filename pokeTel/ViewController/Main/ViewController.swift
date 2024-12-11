@@ -20,7 +20,6 @@ class MainViewController: UIViewController {
         view.backgroundColor = .white
         title = "PokeTel 연락처"
         
-        // Add Button
         let addButton = UIBarButtonItem(title: "추가", style: .plain, target: self, action: #selector(addContact))
         navigationItem.rightBarButtonItem = addButton
     }
@@ -43,10 +42,14 @@ class MainViewController: UIViewController {
     
     @objc private func addContact() {
         let addContactVC = PhoneBookViewController()
-        addContactVC.onSave = { [weak self] name, phoneNumber, profileImage in
+        
+        let viewModel = PhoneBookViewModel()
+        viewModel.onSave = { [weak self] name, phoneNumber, profileImage in
             self?.viewModel.addContact(name: name, phoneNumber: phoneNumber, profileImage: profileImage)
             self?.tableView.reloadData()
         }
+        
+        addContactVC.viewModel = viewModel
         navigationController?.pushViewController(addContactVC, animated: true)
     }
 }
@@ -67,25 +70,25 @@ extension MainViewController: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // 선택된 연락처 가져오기
         let selectedContact = viewModel.contacts[indexPath.row]
 
-        // PhoneBookViewController로 이동
         let editContactVC = PhoneBookViewController()
-        editContactVC.contactName = selectedContact.name
-        editContactVC.contactPhone = selectedContact.phoneNumber
-        editContactVC.contactImage = selectedContact.profileImage
+        
+        // 기존 연락처 데이터를 ViewModel에 설정
+        let editViewModel = PhoneBookViewModel()
+        editViewModel.contactName = selectedContact.name
+        editViewModel.contactPhone = selectedContact.phoneNumber
+        editViewModel.contactImage = selectedContact.profileImage
 
-        // 수정 후 저장하는 콜백 설정
-        editContactVC.onSave = { [weak self] name, phoneNumber, profileImage in
-            guard let self = self else { return }
-            self.viewModel.updateContact(at: indexPath.row, name: name, phoneNumber: phoneNumber, profileImage: profileImage)
-            self.tableView.reloadData()
+        // onSave 콜백 설정
+        editViewModel.onSave = { [weak self] name, phoneNumber, profileImage in
+            self?.viewModel.updateContact(at: indexPath.row, name: name, phoneNumber: phoneNumber, profileImage: profileImage)
+            self?.tableView.reloadData()
         }
+
+        // ViewController에 ViewModel 전달
+        editContactVC.viewModel = editViewModel
 
         navigationController?.pushViewController(editContactVC, animated: true)
     }
 }
-
-
-

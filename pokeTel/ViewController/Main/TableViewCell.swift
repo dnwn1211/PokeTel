@@ -1,10 +1,3 @@
-//
-//  contactTableViewCell.swift
-//  pokeTel
-//
-//  Created by 김석준 on 12/7/24.
-//
-
 import UIKit
 
 class TableViewCell: UITableViewCell {
@@ -27,7 +20,7 @@ class TableViewCell: UITableViewCell {
         profileImageView.layer.borderColor = UIColor.gray.cgColor
         profileImageView.layer.borderWidth = 2
         profileImageView.contentMode = .scaleAspectFill
-        
+
         nameLabel.font = .boldSystemFont(ofSize: 16)
         phoneLabel.font = .systemFont(ofSize: 14)
         phoneLabel.textColor = .gray
@@ -52,7 +45,8 @@ class TableViewCell: UITableViewCell {
 
             phoneLabel.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 16),
             phoneLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 8),
-            phoneLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16)
+            phoneLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            phoneLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16) // bottom constraint 추가
         ])
     }
 
@@ -60,5 +54,21 @@ class TableViewCell: UITableViewCell {
         nameLabel.text = name
         phoneLabel.text = phoneNumber
         profileImageView.image = profileImage
+    }
+    
+    // 비동기 이미지 로딩 (옵션)
+    func loadProfileImage(from urlString: String) {
+        guard let url = URL(string: urlString) else { return }
+        let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
+            if let error = error {
+                print("Error fetching image: \(error)")
+                return
+            }
+            guard let data = data, let image = UIImage(data: data) else { return }
+            DispatchQueue.main.async {
+                self?.profileImageView.image = image
+            }
+        }
+        task.resume()
     }
 }
